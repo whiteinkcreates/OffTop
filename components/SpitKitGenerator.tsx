@@ -3,8 +3,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Drill, Difficulty, ConstraintOptions, Persona } from '@/types'
 import { difficultyConfigs, getRandomBPM, generateDrillPrompt } from '@/data/difficulties'
-import { getRandomWords, getRandomWordsFromMultipleBanks } from '@/data/wordBanks'
-import { getRandomTheme, themes } from '@/data/themes'
+import { getMixedWords } from '@/data/wordBanks'
+import { getRandomTheme } from '@/data/themes'
 import { getRandomPersona, personas } from '@/data/personas'
 import { SelectorControls } from './SelectorControls'
 import { ToggleControl } from './ToggleControl'
@@ -56,14 +56,12 @@ export function SpitKitGenerator({ onDrillGenerated }: SpitKitGeneratorProps) {
     setBarCount(config.barCount)
     setSelectedTime(config.defaultTime)
     setConstraints(config.constraints)
-    setUseRandomPersona(config.personaRequired)
+    setUseRandomPersona(config.personaRequired ?? false)
   }, [difficulty])
 
   // Generate words when difficulty or word count changes
   useEffect(() => {
-    const config = difficultyConfigs[difficulty]
-    const bankKeys = config.wordBanks as Array<keyof typeof import('@/data/wordBanks').wordBanks>
-    const newWords = getRandomWordsFromMultipleBanks(bankKeys, wordCount)
+    const newWords = getMixedWords(wordCount)
     setWords(newWords)
   }, [difficulty, wordCount])
 
@@ -97,8 +95,7 @@ export function SpitKitGenerator({ onDrillGenerated }: SpitKitGeneratorProps) {
   }
 
   const generateDrill = useCallback(() => {
-    const config = difficultyConfigs[difficulty]
-    const personaToUse = useRandomPersona ? getRandomPersona() : selectedPersona
+        const personaToUse = useRandomPersona ? getRandomPersona() : selectedPersona
 
     const newDrill: Drill = {
       id: Date.now().toString(),
@@ -129,12 +126,10 @@ export function SpitKitGenerator({ onDrillGenerated }: SpitKitGeneratorProps) {
   }, [difficulty, theme, barCount, selectedTime, words, constraints, selectedPersona, useRandomPersona, drillHistory, onDrillGenerated])
 
   const generateNewWords = useCallback(() => {
-    const config = difficultyConfigs[difficulty]
-    const bankKeys = config.wordBanks as Array<keyof typeof import('@/data/wordBanks').wordBanks>
-    const newWords = getRandomWordsFromMultipleBanks(bankKeys, wordCount)
+    const newWords = getMixedWords(wordCount)
     setWords(newWords)
     setGeneratedDrill(null)
-  }, [difficulty, wordCount])
+  }, [wordCount])
 
   const generateNewTheme = useCallback(() => {
     setTheme(getRandomTheme())

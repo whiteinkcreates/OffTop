@@ -1,22 +1,24 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'OffTop | No pen. No prep. Just bars.',
-  description: 'Freestyle rap practice challenge generator',
-  viewport: 'width=device-width, initial-scale=1',
+  title: 'OffTop',
+  description: 'No pen. No prep. Just bars.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className="bg-offtop-dark text-white antialiased">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

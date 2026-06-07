@@ -1,6 +1,6 @@
 'use client'
 
-import { Drill, ConstraintOptions } from '@/types'
+import { Drill } from '@/types'
 import { PillWordList } from './PillWordList'
 import { useState } from 'react'
 

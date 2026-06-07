@@ -2,54 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+}
+
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
+html {
+  min-height: 100%;
+  background: #020617;
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(163, 230, 53, 0.18), transparent 30rem),
+    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.12), transparent 28rem),
+    #020617;
+  color: #f8fafc;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0, 255, 136, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(0, 255, 136);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(0, 204, 107);
-}
-
-/* Focus styles */
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid rgb(0, 255, 136);
-  outline-offset: 2px;
-}
-
-/* Smooth transitions */
 button,
-input,
 select,
+input,
 textarea {
-  transition: all 0.2s ease;
+  font: inherit;
 }
