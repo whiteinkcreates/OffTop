@@ -1,5 +1,11 @@
 export type Difficulty = 'Rookie' | 'Open Mic' | 'Cipher' | 'ColdBars' | 'Final Boss'
 
+export interface Persona {
+  id: string
+  name: string
+  description?: string
+}
+
 export interface ConstraintOptions {
   mustUseAllWords: boolean
   useWordsInOrder: boolean
@@ -15,23 +21,27 @@ export interface Drill {
   difficulty: Difficulty
   theme: string
   barCount: number
-  timeLimit: number // seconds
+  timeSeconds: number
+  bpm: number
   words: string[]
-  persona?: string
+  persona?: Persona | null
   constraints: ConstraintOptions
-  suggestedBPM: number
-  createdAt: Date
+  prompt: string
+  createdAt: string
 }
 
 export interface DifficultyConfig {
   name: Difficulty
   wordCount: number
   barCount: number
-  timeLimit: number
+  defaultTime: number
+  timeOptions: number[]
   description: string
   bpmMin: number
   bpmMax: number
   constraints: ConstraintOptions
+  wordBanks: string[]
+  personaRequired?: boolean
   isHard?: boolean
   isExtreme?: boolean
 }
