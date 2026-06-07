@@ -1,159 +1,133 @@
 'use client'
 
-import { Drill } from '@/types'
+import { Drill, ConstraintOptions } from '@/types'
 import { PillWordList } from './PillWordList'
+import { useState } from 'react'
 
 interface CipherDeckCardProps {
   drill: Drill
-  onCopy?: () => void
-  copied?: boolean
+  onClose?: () => void
 }
 
-export function CipherDeckCard({ drill, onCopy, copied }: CipherDeckCardProps) {
-  const getConstraintLabels = (): string[] => {
-    const labels: string[] = []
-    if (drill.constraints.mustUseAllWords) labels.push('Use all words')
-    if (drill.constraints.useWordsInOrder) labels.push('Use words in order')
-    if (drill.constraints.includePunchline) labels.push('Include one punchline')
-    if (drill.constraints.includeMetaphor) labels.push('Include one metaphor')
-    if (drill.constraints.tellStory) labels.push('Tell a story')
-    if (drill.constraints.noProfanity) labels.push('No profanity')
-    if (drill.constraints.switchFlowHalfway) labels.push('Switch flow halfway')
-    return labels
+export function CipherDeckCard({ drill, onClose }: CipherDeckCardProps) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    const drillText = `
+DIFFICULTY: ${drill.difficulty}
+THEME: ${drill.theme}
+WORDS: ${drill.words.join(', ')}
+BARS: ${drill.barCount}
+TIME: ${Math.floor(drill.timeSeconds / 60)}:${(drill.timeSeconds % 60).toString().padStart(2, '0')}
+BPM: ${drill.bpm}
+${drill.persona ? `PERSONA: ${drill.persona.name}` : ''}
+
+CONSTRAINTS:
+${Object.entries(drill.constraints)
+  .filter(([_, value]) => value === true)
+  .map(([key]) => `  • ${key.replace(/([A-Z])/g, ' $1').trim()}`)
+  .join('\n')}
+
+PROMPT: ${drill.prompt}
+    `.trim()
+
+    navigator.clipboard.writeText(drillText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
-  const constraints = getConstraintLabels()
-
-  const getDrillPrompt = (): string => {
-    const wordList = drill.words.join(', ')
-    const withPersona = drill.persona ? ` Perform as a ${drill.persona}.` : ''
-    return `Freestyle ${drill.barCount} bars about ${drill.theme}. Use the words: ${wordList}.${withPersona}`
-  }
-
-  const generateShareText = (): string => {
-    const wordList = drill.words.join(', ')
-    const constraintText = constraints.length > 0 ? `\n\nRules:\n${constraints.map((c) => `• ${c}`).join('\n')}` : ''
-    const personaText = drill.persona ? `\nPersona: ${drill.persona}` : ''
-
-    return `CIPHER DECK - OffTop
-
-SpitKit loaded your drill.
-
-Difficulty: ${drill.difficulty}
-Theme: ${drill.theme}
-Bars: ${drill.barCount}
-Time: ${drill.timeLimit}s
-Suggested BPM: ${drill.suggestedBPM}
-
-Words:
-${drill.words.map((w) => `• ${w}`).join('\n')}${personaText}${constraintText}
-
-Prompt:
-${getDrillPrompt()}
-
-No pen. No prep. Just bars.`
-  }
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(generateShareText())
-      onCopy?.()
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
-  }
+  const activeConstraints = Object.entries(drill.constraints)
+    .filter(([_, value]) => value === true)
+    .map(([key]) => key)
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-gray-900 border-2 border-offtop-accent rounded-lg p-6 md:p-8 space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <div className="text-sm font-bold text-offtop-accent-dim uppercase tracking-wider">
-            CIPHER DECK
-          </div>
-          <h2 className="text-2xl md:text-3xl font-bold">
-            SpitKit loaded your drill.
-          </h2>
+    <div className="bg-gray-900 border-3 border-offtop-accent rounded-lg p-6 space-y-4 animate-in fade-in slide-in-from-top-4">
+      {/* Header */}
+      <div className="space-y-2">
+        <div className="text-center text-offtop-accent text-xs font-bold uppercase tracking-widest">
+          Cipher Deck Loaded
         </div>
+        <h2 className="text-center text-3xl font-black text-white">{drill.theme}</h2>
+      </div>
 
-        {/* Metadata */}
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-400">Difficulty</span>
-            <div className="font-bold text-lg">
-              {drill.difficulty === 'ColdBars' ? (
-                <span className="text-offtop-cold">ColdBars</span>
-              ) : drill.difficulty === 'Final Boss' ? (
-                <span className="text-offtop-danger">Final Boss</span>
-              ) : (
-                drill.difficulty
-              )}
-            </div>
-          </div>
-          <div>
-            <span className="text-gray-400">Theme</span>
-            <div className="font-bold text-lg">{drill.theme}</div>
-          </div>
-          <div>
-            <span className="text-gray-400">Bars</span>
-            <div className="font-bold text-lg">{drill.barCount}</div>
-          </div>
-          <div>
-            <span className="text-gray-400">Time</span>
-            <div className="font-bold text-lg">{drill.timeLimit}s</div>
-          </div>
-          <div>
-            <span className="text-gray-400">Suggested BPM</span>
-            <div className="font-bold text-lg">{drill.suggestedBPM}</div>
+      {/* Main Info Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-gray-800 p-3 rounded-lg">
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase">Difficulty</div>
+          <div className="text-xl font-black text-offtop-accent">{drill.difficulty}</div>
+        </div>
+        <div className="bg-gray-800 p-3 rounded-lg">
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase">BPM</div>
+          <div className="text-xl font-black text-offtop-accent">{drill.bpm}</div>
+        </div>
+        <div className="bg-gray-800 p-3 rounded-lg">
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase">Bars</div>
+          <div className="text-xl font-black text-offtop-accent">{drill.barCount}</div>
+        </div>
+        <div className="bg-gray-800 p-3 rounded-lg">
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase">Time</div>
+          <div className="text-xl font-black text-offtop-accent">
+            {Math.floor(drill.timeSeconds / 60)}:{(drill.timeSeconds % 60).toString().padStart(2, '0')}
           </div>
         </div>
+      </div>
 
-        {/* Words */}
+      {/* Words */}
+      <div>
+        <div className="text-offtop-accent-dim text-xs font-bold uppercase mb-2">Words</div>
+        <PillWordList words={drill.words} />
+      </div>
+
+      {/* Persona if present */}
+      {drill.persona && (
+        <div className="bg-gray-800 p-3 rounded-lg border-l-4 border-offtop-accent">
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase">Persona</div>
+          <div className="font-bold text-white">{drill.persona.name}</div>
+        </div>
+      )}
+
+      {/* Constraints */}
+      {activeConstraints.length > 0 && (
         <div>
-          <div className="text-gray-400 text-sm mb-3 font-bold">WORDS</div>
-          <PillWordList words={drill.words} />
-        </div>
-
-        {/* Persona */}
-        {drill.persona && (
-          <div>
-            <div className="text-gray-400 text-sm mb-2 font-bold">PERSONA</div>
-            <div className="font-semibold">{drill.persona}</div>
+          <div className="text-offtop-accent-dim text-xs font-bold uppercase mb-2">Active Constraints</div>
+          <div className="flex flex-wrap gap-2">
+            {activeConstraints.map((constraint) => (
+              <div
+                key={constraint}
+                className="px-2 py-1 bg-offtop-danger text-white text-xs font-bold rounded-md"
+              >
+                {constraint
+                  .replace(/([A-Z])/g, ' $1')
+                  .toLowerCase()
+                  .trim()}
+              </div>
+            ))}
           </div>
-        )}
-
-        {/* Rules/Constraints */}
-        {constraints.length > 0 && (
-          <div>
-            <div className="text-gray-400 text-sm mb-3 font-bold">RULES</div>
-            <ul className="space-y-2">
-              {constraints.map((constraint, idx) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <span className="text-offtop-accent mt-1">•</span>
-                  <span className="text-sm">{constraint}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Prompt */}
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-          <div className="text-gray-400 text-xs font-bold mb-2">PROMPT</div>
-          <p className="text-sm leading-relaxed">{getDrillPrompt()}</p>
         </div>
+      )}
 
-        {/* Copy Button */}
+      {/* Prompt */}
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <div className="text-offtop-accent text-sm font-bold mb-2 uppercase">Your Prompt</div>
+        <p className="text-white text-base leading-relaxed font-medium">{drill.prompt}</p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 pt-2">
         <button
           onClick={handleCopy}
-          className={`w-full py-3 font-bold rounded-lg transition ${
-            copied
-              ? 'bg-offtop-accent text-offtop-dark'
-              : 'bg-offtop-accent-dim text-offtop-dark hover:bg-offtop-accent'
-          }`}
+          className="flex-1 px-4 py-3 bg-offtop-accent text-offtop-dark font-bold rounded-lg hover:bg-offtop-accent-light transition-colors active:scale-95"
         >
           {copied ? '✓ Copied' : 'Copy Drill'}
         </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border-2 border-offtop-accent text-offtop-accent font-bold rounded-lg hover:bg-offtop-accent hover:text-offtop-dark transition-colors active:scale-95"
+          >
+            Close
+          </button>
+        )}
       </div>
     </div>
   )
